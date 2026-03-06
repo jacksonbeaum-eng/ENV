@@ -9,7 +9,6 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <style>
     :root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--surface3:#1e1e28;--border:#2a2a38;--border2:#353548;--text:#f0f0ff;--text2:#9898b8;--text3:#5a5a78;--accent:#7c6dfa;--accent2:#5b4edd;--green:#22d3a0;--red:#f45b69;--mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;--blue:#3b82f6;--yellow:#fbbf24;--orange:#f97316;}
     *{margin:0;padding:0;box-sizing:border-box;}
@@ -106,7 +105,6 @@
     .badge-final{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(244,91,105,0.15);color:#f45b69;}
     .badge-paycheck{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(34,197,94,0.15);color:#4ade80;}
     .badge-side{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(124,109,250,0.15);color:#7c6dfa;}
-    .chart-container{background:var(--surface2);border:1px solid var(--border2);border-radius:0.5rem;padding:1rem;margin-bottom:1rem;position:relative;height:300px;}
     .category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin-bottom:1rem;}
     .category-card{background:var(--surface2);border:1px solid var(--border2);border-radius:0.4rem;padding:0.6rem;text-align:center;}
     .category-icon{font-size:1.2rem;margin-bottom:0.3rem;}
@@ -123,12 +121,11 @@
     .calendar-day{aspect-ratio:1;background:var(--surface2);border:1px solid var(--border2);border-radius:0.3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.6rem;padding:0.3rem;text-align:center;}
     .calendar-day.paycheck{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);}
     .calendar-day.bill{background:rgba(244,91,105,0.15);border-color:rgba(244,91,105,0.3);}
-    .calendar-day.today{border:2px solid var(--accent);}
     .export-btn{background:var(--accent);color:var(--bg);border:none;padding:0.6rem 1rem;border-radius:0.3rem;cursor:pointer;font-weight:700;font-size:0.75rem;transition:background 0.2s;}
     .export-btn:active{background:var(--accent2);}
     .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
     .modal-overlay.open{display:flex;}
-    .modal{background:var(--surface);border:1px solid var(--border);border-radius:0.5rem;padding:1.5rem;max-width:400px;width:90%;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:0.5rem;padding:1.5rem;max-width:400px;width:90%;position:relative;}
     .modal-title{font-size:1rem;font-weight:700;margin-bottom:1rem;}
     .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.5rem;}
     .modal-input{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:0.6rem;border-radius:0.3rem;margin-bottom:0.8rem;font-family:var(--mono);font-size:0.75rem;}
@@ -138,20 +135,15 @@
     .modal-btn{flex:1;padding:0.6rem;border:none;border-radius:0.3rem;cursor:pointer;font-weight:700;font-size:0.75rem;}
     .modal-btn.primary{background:var(--accent);color:var(--bg);}
     .modal-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2);}
-    .goal-tracker{background:var(--surface2);border:1px solid var(--border2);border-radius:0.4rem;padding:0.8rem;margin-bottom:1rem;}
-    .goal-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);}
-    .goal-row:last-child{border-bottom:none;}
-    .goal-label{font-size:0.65rem;color:var(--text2);}
-    .goal-progress{flex:1;height:8px;background:var(--surface3);border-radius:4px;margin:0 0.5rem;overflow:hidden;}
+    .goal-progress{height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;}
     .goal-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width 0.3s;}
-    .goal-amount{font-family:var(--mono);font-size:0.7rem;font-weight:700;color:var(--text);}
     .footer-note{margin-top:1.5rem;text-align:center;font-size:0.65rem;color:var(--text3);font-family:var(--mono);}
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-  const { useState, useMemo, useEffect, useRef } = React;
+  const { useState, useMemo, useEffect } = React;
 
 const CYCLE_DATA = [
 {num:5,paydate:new Date(2026,2,6),bills:[
@@ -262,9 +254,7 @@ const cycles=useMemo(buildCycles,[]);
 const [tab,setTab]=useState(‘cycles’);
 const [cs,setCs]=useState(()=>{
 const s=localStorage.getItem(‘ftState’);
-if(s){
-try{return JSON.parse(s);}catch(e){}
-}
+if(s){try{return JSON.parse(s);}catch(e){}}
 const state={};
 cycles.forEach(c=>{state[c.id]={open:false,paid:{},income:[],customBills:[],notes:{},goal:0};});
 return state;
@@ -306,7 +296,6 @@ const setGoal=(cid,goal)=>{
   setCs(p=>({...p,[cid]:{...p[cid],goal}}));
 };
 
-// Analytics
 const categoryTotals={};
 const debtItems=[];
 cycles.forEach((c,idx)=>{
@@ -314,7 +303,7 @@ cycles.forEach((c,idx)=>{
     categoryTotals[b.cat]=(categoryTotals[b.cat]||0)+b.amount;
     if(b.cat==='debt'){
       const isPaid=!!cs[c.id].paid[b.id];
-      debtItems.push({name:b.name,amount:b.amount,paid:isPaid,final:b.final,id:b.id});
+      debtItems.push({name:b.name,amount:b.amount,paid:isPaid,final:b.final,id:b.id,cid:c.id});
     }
   });
   cs[c.id].customBills.forEach(b=>{
@@ -327,7 +316,6 @@ const ySideIncome=cycles.reduce((s,c)=>s+cs[c.id].income.filter(i=>i.type==='sid
 const yTotalIncome=yPaycheck+ySideIncome;
 const yBills=cycles.reduce((s,c)=>s+c.total+cs[c.id].customBills.reduce((ss,b)=>ss+b.amount,0),0);
 const yRemaining=yBills-yTotalIncome;
-const yTotalPaid=cycles.reduce((s,c)=>s+c.bills.filter(b=>cs[c.id].paid[b.id]).reduce((ss,b)=>ss+b.amount,0),0);
 
 const debtPaid=debtItems.filter(d=>d.paid).reduce((s,d)=>s+d.amount,0);
 const debtTotal=debtItems.reduce((s,d)=>s+d.amount,0);
@@ -346,7 +334,7 @@ const exportData=()=>{
       remaining:total-paid-income
     };
   });
-  const csv=['Cycle,Date,Total Bills,Paid,Total Income,Remaining','...'+data.map(d=>`${d.cycle},${d.date},${d.totalBills},${d.paidBills},${d.totalIncome},${d.remaining}`).join('\n')].join('\n');
+  const csv=['Cycle,Date,Total Bills,Paid,Total Income,Remaining',...data.map(d=>`${d.cycle},${d.date},${d.totalBills},${d.paidBills},${d.totalIncome},${d.remaining}`)].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -549,11 +537,11 @@ return (
               </div>
               <div>
                 <div className="summary-label">Progress</div>
-                <div className="summary-value b">{Math.round((debtPaid/debtTotal)*100)}%</div>
+                <div className="summary-value b">{debtTotal>0?Math.round((debtPaid/debtTotal)*100):0}%</div>
               </div>
             </div>
             <div className="goal-progress" style={{height:'12px',marginBottom:'1rem'}}>
-              <div className="goal-progress-fill" style={{width:Math.round((debtPaid/debtTotal)*100)+'%'}}></div>
+              <div className="goal-progress-fill" style={{width:(debtTotal>0?Math.round((debtPaid/debtTotal)*100):0)+'%'}}></div>
             </div>
             {debtItems.filter(d=>d.paid||d.final).length>0&&(
               <>
@@ -579,7 +567,6 @@ return (
         <div className="hdr">
           <h1>Paycheck<span> Calendar</span></h1>
         </div>
-        
         <div className="pane">
           <div className="pane-ttl">Mar - May 2026 Overview</div>
           <div style={{marginBottom:'1.5rem'}}>
@@ -606,7 +593,7 @@ return (
                   return(
                     <div key={d} className={'calendar-day'+(isPaycheck?' paycheck':'')+(hasBill?' bill':'')}>
                       <div style={{fontSize:'0.5rem'}}>{dateInCycle.getDate()}</div>
-                      {isPaycheck&&<div style={{fontSize:'0.4rem',fontWeight:700}}>PAYCHECK</div>}
+                      {isPaycheck&&<div style={{fontSize:'0.4rem',fontWeight:700}}>PC</div>}
                       {hasBill&&<div style={{fontSize:'0.4rem',fontWeight:700}}>BILLS</div>}
                     </div>
                   );
@@ -618,8 +605,8 @@ return (
       </>
     )}
 
-    <NoteModal show={showNoteModal} billId={showNoteModal} noteText={noteText} onSave={(note)=>{if(showNoteModal){const cid=Object.keys(cs).find(cid=>cs[cid].paid[showNoteModal]!==undefined)||Object.keys(cs)[0];setNote(cid,showNoteModal,note);}setShowNoteModal(null);}} onClose={()=>setShowNoteModal(null)} onChange={setNoteText}/>
-    <GoalModal show={showGoalModal} amount={goalAmount} onSave={(amt)=>{setGoal(showGoalModal,parseFloat(amt)||0);setShowGoalModal(null);}} onClose={()=>setShowGoalModal(null)} onChange={setGoalAmount}/>
+    <NoteModal show={showNoteModal} noteText={noteText} onSave={(note)=>{if(showNoteModal){const cid=Object.keys(cs).find(c=>cs[c].notes[showNoteModal]!==undefined)||Object.keys(cs)[0];setNote(cid,showNoteModal,note);}setShowNoteModal(null);}} onClose={()=>setShowNoteModal(null)} onChange={setNoteText}/>
+    <GoalModal show={showGoalModal} amount={goalAmount} onSave={(amt)=>{if(showGoalModal)setGoal(showGoalModal,parseFloat(amt)||0);setShowGoalModal(null);}} onClose={()=>setShowGoalModal(null)} onChange={setGoalAmount}/>
 
     <p className="footer-note">tap bill to mark paid · add income to reduce amount needed · export data for analysis · track debt progress</p>
   </div>
@@ -631,68 +618,58 @@ return (
 function IncomeInput({onAdd}){
 const [input,setInput]=useState(’’);
 const [type,setType]=useState(‘paycheck’);
-
-```
 const handleAdd=()=>{
-  const match=input.match(/^([a-zA-Z\s&0-9]+?)\s*[-–]\s*\$?([\d,]+(?:\.\d{2})?)\s*$/);
-  if(!match)return;
-  const source=match[1].trim();
-  const amount=parseFloat(match[2].replace(/,/g,''));
-  if(source&&amount>0){
-    onAdd(source,amount,type);
-    setInput('');
-  }
+const match=input.match(/^([a-zA-Z\s&0-9]+?)\s*[-–]\s*$?([\d,]+(?:.\d{2})?)\s*$/);
+if(!match)return;
+const source=match[1].trim();
+const amount=parseFloat(match[2].replace(/,/g,’’));
+if(source&&amount>0){
+onAdd(source,amount,type);
+setInput(’’);
+}
 };
-
 return(
-  <div className="income-input-group">
-    <input type="text" placeholder="Amazon Flex - 90" value={input} onChange={e=>setInput(e.target.value)} onKeyPress={e=>e.key==='Enter'&&handleAdd()}/>
-    <select value={type} onChange={e=>setType(e.target.value)}>
-      <option value="paycheck">Paycheck</option>
-      <option value="side">Side Income</option>
-    </select>
-    <button className="income-btn" onClick={handleAdd}>Add</button>
-  </div>
+<div className="income-input-group">
+<input type=“text” placeholder=“Amazon Flex - 90” value={input} onChange={e=>setInput(e.target.value)} onKeyPress={e=>e.key===‘Enter’&&handleAdd()}/>
+<select value={type} onChange={e=>setType(e.target.value)}>
+<option value="paycheck">Paycheck</option>
+<option value="side">Side Income</option>
+</select>
+<button className="income-btn" onClick={handleAdd}>Add</button>
+</div>
 );
-```
-
 }
 
 function AddBillForm({onAdd}){
 const [input,setInput]=useState(’’);
-
-```
 const handleAdd=()=>{
-  const match=input.match(/^([a-zA-Z\s&0-9:]+?)\s*[-–]\s*\$?([\d,]+(?:\.\d{2})?)\s*$/);
-  if(!match)return;
-  const name=match[1].trim();
-  const amount=parseFloat(match[2].replace(/,/g,''));
-  if(name&&amount>0){
-    onAdd(name,amount);
-    setInput('');
-  }
+const match=input.match(/^([a-zA-Z\s&0-9:]+?)\s*[-–]\s*$?([\d,]+(?:.\d{2})?)\s*$/);
+if(!match)return;
+const name=match[1].trim();
+const amount=parseFloat(match[2].replace(/,/g,’’));
+if(name&&amount>0){
+onAdd(name,amount);
+setInput(’’);
+}
 };
-
 return(
-  <div style={{marginTop:'0.8rem',paddingTop:'0.8rem',borderTop:'1px solid var(--border)'}}>
-    <div style={{fontSize:'0.55rem',fontWeight:700,color:'var(--text3)',textTransform:'uppercase',marginBottom:'0.6rem'}}>Add Custom Bill</div>
-    <div className="income-input-group">
-      <input type="text" placeholder="Bill name - 50" value={input} onChange={e=>setInput(e.target.value)} onKeyPress={e=>e.key==='Enter'&&handleAdd()}/>
-      <button className="income-btn" onClick={handleAdd}>Add</button>
-    </div>
-  </div>
+<div style={{marginTop:‘0.8rem’,paddingTop:‘0.8rem’,borderTop:‘1px solid var(–border)’}}>
+<div style={{fontSize:‘0.55rem’,fontWeight:700,color:‘var(–text3)’,textTransform:‘uppercase’,marginBottom:‘0.6rem’}}>Add Custom Bill</div>
+<div className="income-input-group">
+<input type=“text” placeholder=“Bill name - 50” value={input} onChange={e=>setInput(e.target.value)} onKeyPress={e=>e.key===‘Enter’&&handleAdd()}/>
+<button className="income-btn" onClick={handleAdd}>Add</button>
+</div>
+</div>
 );
-```
-
 }
 
-function NoteModal({show,billId,noteText,onSave,onClose,onChange}){
+function NoteModal({show,noteText,onSave,onClose,onChange}){
 return(
 <div className={‘modal-overlay’+(show?’ open’:’’)}>
 <div className="modal">
 <button className="modal-close" onClick={onClose}>×</button>
 <div className="modal-title">Bill Note</div>
-<textarea className=“modal-input” style={{minHeight:‘100px’,fontFamily:‘var(–sans)’,resize:‘vertical’}} value={noteText} onChange={e=>onChange(e.target.value)} placeholder=“Add notes about this bill…” />
+<textarea className=“modal-input” style={{minHeight:‘100px’,fontFamily:‘var(–sans)’,resize:‘vertical’}} value={noteText} onChange={e=>onChange(e.target.value)} placeholder=“Add notes about this bill…”></textarea>
 <div className="modal-buttons">
 <button className="modal-btn secondary" onClick={onClose}>Cancel</button>
 <button className=“modal-btn primary” onClick={()=>onSave(noteText)}>Save</button>
