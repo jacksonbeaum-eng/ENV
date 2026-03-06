@@ -392,7 +392,6 @@ return (
             const remaining=cycleTotal-paidAmt-totalIncome;
             const isOpen=cst.open;
             const progressPct=Math.min(100,Math.round((paidAmt/cycleTotal)*100));
-            const isOpen=cst.open;
             return (
               <div key={cycle.id} className={'card'+(isOpen?' open':'')}>
                 <button className="card-hdr" onClick={()=>toggleOpen(cycle.id)}>
@@ -619,7 +618,7 @@ return (
       </>
     )}
 
-    <NoteModal show={showNoteModal} billId={showNoteModal} noteText={noteText} onSave={(note)=>{if(showNoteModal&&Object.values(cs).find(c=>c.notes[showNoteModal]!==undefined)){const cid=Object.keys(cs).find(cid=>cs[cid].notes[showNoteModal]!==undefined)||Object.keys(cs)[0];setNote(cid,showNoteModal,note);}setShowNoteModal(null);}} onClose={()=>setShowNoteModal(null)} onChange={setNoteText}/>
+    <NoteModal show={showNoteModal} billId={showNoteModal} noteText={noteText} onSave={(note)=>{if(showNoteModal){const cid=Object.keys(cs).find(cid=>cs[cid].paid[showNoteModal]!==undefined)||Object.keys(cs)[0];setNote(cid,showNoteModal,note);}setShowNoteModal(null);}} onClose={()=>setShowNoteModal(null)} onChange={setNoteText}/>
     <GoalModal show={showGoalModal} amount={goalAmount} onSave={(amt)=>{setGoal(showGoalModal,parseFloat(amt)||0);setShowGoalModal(null);}} onClose={()=>setShowGoalModal(null)} onChange={setGoalAmount}/>
 
     <p className="footer-note">tap bill to mark paid · add income to reduce amount needed · export data for analysis · track debt progress</p>
@@ -693,7 +692,7 @@ return(
 <div className="modal">
 <button className="modal-close" onClick={onClose}>×</button>
 <div className="modal-title">Bill Note</div>
-<textarea className=“modal-input” style={{minHeight:‘100px’,fontFamily:‘var(–sans)’,resize:‘vertical’}} value={noteText} onChange={e=>onChange(e.target.value)} placeholder=“Add notes about this bill…”/>
+<textarea className=“modal-input” style={{minHeight:‘100px’,fontFamily:‘var(–sans)’,resize:‘vertical’}} value={noteText} onChange={e=>onChange(e.target.value)} placeholder=“Add notes about this bill…” />
 <div className="modal-buttons">
 <button className="modal-btn secondary" onClick={onClose}>Cancel</button>
 <button className=“modal-btn primary” onClick={()=>onSave(noteText)}>Save</button>
